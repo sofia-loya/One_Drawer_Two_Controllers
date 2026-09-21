@@ -123,7 +123,11 @@ def render_rgb(model, data, camera: str) -> np.ndarray:
     render from. If this returns the third-person view, you passed the wrong
     camera.
     """
-    raise NotImplementedError("TODO 1.1")
+    renderer = mujoco.Renderer(model, height=HEIGHT, width=WIDTH)
+    renderer.update_scene(data, camera=camera)
+    rgb = renderer.render()
+    renderer.close()
+    return rgb
 
 
 def render_depth(model, data, camera: str) -> np.ndarray:
@@ -134,7 +138,12 @@ def render_depth(model, data, camera: str) -> np.ndarray:
     no conversion is needed - but you must say in your report what the values at
     the sky and at the floor mean, and why depth has no colour channels.
     """
-    raise NotImplementedError("TODO 1.2")
+    renderer = mujoco.Renderer(model, height=HEIGHT, width=WIDTH)
+    renderer.enable_depth_rendering()
+    renderer.update_scene(data, camera=camera)
+    depth = renderer.render()
+    renderer.close()
+    return depth
 
 
 def main() -> None:

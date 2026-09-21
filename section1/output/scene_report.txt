@@ -3,7 +3,7 @@ Scene: /home/csloy/assignment-04/scene/drawer_scene.xml
 Model
 -----
   nq / nv / nu   : 10 / 10 / 8
-  bodies / geoms : 14 / 86
+  bodies / geoms : 15 / 87
   timestep       : 0.002 s
   integrator     : IMPLICITFAST
   solver iters   : 10 (ls 5)

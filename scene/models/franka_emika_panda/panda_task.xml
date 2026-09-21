@@ -57,7 +57,7 @@
     <mesh name="link7_c" file="link7.stl"/>
     <mesh name="hand_c" file="hand.stl"/>
     <mesh name="zed_cam" file="zed_cam_monocular.stl" scale="0.001 0.001 0.001"/>
-   
+    
     <!-- Visual meshes -->
     <mesh file="link0_0.obj"/>
     <mesh file="link0_1.obj"/>
@@ -229,6 +229,12 @@
                         <geom class="fingertip_pad_collision_3"/>
                         <geom class="fingertip_pad_collision_4"/>
                         <geom class="fingertip_pad_collision_5"/>
+                      </body>
+                      <body name="cam_body" pos="0.048 0 0.01">
+                        <inertial pos="0 0 0" mass="0.16" diaginertia="1e-4 1e-4 1e-4"/>
+                        <geom type="mesh" mesh="zed_cam" material="zed_gray" euler="1.5708 0 0" class="visual"/>
+                        <camera name="wrist_cam" pos="0 0 0.03" xyaxes="0 1 0 1 0 0"
+                                focal="0.003 0.003" sensorsize="0.00768 0.00432" resolution="3840 2160"/>
                       </body>
                       <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
                         <inertial mass="0.015" pos="0 0 0" diaginertia="2.375e-6 2.375e-6 7.5e-7"/>

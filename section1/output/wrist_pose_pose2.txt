@@ -1,0 +1,8 @@
+camera            : wrist_cam
+world position    : [-0.4232, -0.0886, 0.7377]
+x axis (image right): [0.458, -0.8383, 0.2956]
+y axis (image up)   : [0.1974, 0.4201, 0.8857]
+viewing direction   : [0.8667, 0.3474, -0.3579]   (= -Z)
+image size        : (480, 640, 3)
+depth range (m)   : 0.016 - 4.999
+pixels closer than 2 m: 77.4 %
