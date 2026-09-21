@@ -1,0 +1,31 @@
+Scene: /home/csloy/assignment-04/scene/drawer_scene.xml
+
+Model
+-----
+  nq / nv / nu   : 10 / 10 / 8
+  bodies / geoms : 14 / 86
+  timestep       : 0.002 s
+  integrator     : IMPLICITFAST
+  solver iters   : 10 (ls 5)
+
+Static checks
+-------------
+  [PASS] defect 1: integration settings
+         timestep=0.002 (limit 0.002), integrator=IMPLICITFAST - implicitfast is the Menagerie default for this arm
+  [PASS] defect 2: the cabinet shell does not fight the drawer
+         shell/drawer_front boxes intersect by 25 mm, shell collidable=False; 0 contacts at t=0, deepest penetration 0.0 mm
+  [PASS] defect 3: drawer joint is limited and damped
+         limited=True, range span=0.350 m, damping=2.0
+  [PASS] defect 4: drawer inertial properties are plausible
+         mass=0.2000 kg (ok, allowed 0.2-20.0 kg); largest principal inertia=0.0086 kg m^2 (ok, allowed 0.0001-1.0 kg m^2); for scale, the heaviest Panda link is 4.97 kg with a largest principal inertia of 0.7071 kg m^2. A body carries mass AND a rotational inertia tensor; both have to be physical.
+  [PASS] defect 5: the handle the gripper actually meets can be grasped
+         drawer_handle r=15.0 mm COLLIDABLE, drawer_handle_2 r=20.0 mm visual only. Thinnest collidable radius=15.0 mm (minimum 10 mm); at 0.35 m/s and dt=0.002 s the tool and that geom can overlap for about 67 consecutive steps (minimum 20). Contact is re-detected every step, so a pair that overlaps for only a few steps never builds up force.
+
+Dynamic checks
+--------------
+  [PASS] 10 s stability: max |qvel| = 0.09 rad/s (limit 50.0)
+  [PASS] timestep convergence: hand position differs by 0.76 mm between dt=0.002 and dt=0.001 (tolerance 5 mm)
+
+Result: 5/5 static checks, stability ok, convergence ok
+The model is sound. Explaining *why* each defect mattered is still part
+of the grade - a passing check with no explanation earns no marks.

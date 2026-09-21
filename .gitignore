@@ -1,0 +1,8 @@
+.venv/
+scene/models/franka_emika_panda/*
+!scene/models/franka_emika_panda/panda_task.xml
+__pycache__/
+*.pyc
+section3/runs/
+*.zip
+*.mp4
