@@ -213,7 +213,17 @@ class DrawerEnv(gym.Env):
         Return float32 of shape (OBS_DIM,). Nothing here may be a Python list:
         SB3 will copy this array millions of times.
         """
-        obs = np.zeros(OBS_DIM, dtype=np.float32)
+        arm_qpos = self.data.qpos[self._arm_qpos]              # (7,)
+        arm_qvel = self.data.qvel[self._arm_dof]                # (7,)
+        ee = self.ee_position                                    # (3,)
+        handle_rel = self.handle_position - self.ee_position     # (3,)
+        drawer_opening = np.array([self.drawer_opening])         # (1,)
+        drawer_rate = np.array([self.data.qvel[self._drawer_dof]])  # (1,)
+        grasped = np.array([1.0 if self._grasped else 0.0])      # (1,)
+
+        obs = np.concatenate(
+            [arm_qpos, arm_qvel, ee, handle_rel, drawer_opening, drawer_rate, grasped]
+        ).astype(np.float32)
         return obs
 
     def _apply_action(self, action: np.ndarray) -> None:
@@ -230,7 +240,9 @@ class DrawerEnv(gym.Env):
         actuator alone. Explain in your video why an unbounded, absolute action
         would make this task much harder to learn.
         """
-        raise NotImplementedError("TODO 3.2")
+        current = self.data.ctrl[self._arm_act]
+        target = current + action * self.max_joint_delta
+        self.data.ctrl[self._arm_act] = np.clip(target, self._ctrl_low, self._ctrl_high)
 
     def _maybe_grasp(self) -> None:
         """TODO 3.3 - engage the weld the first time the tool reaches the handle.
@@ -240,6 +252,10 @@ class DrawerEnv(gym.Env):
         threshold trades off: too large and the drawer teleports to the hand,
         too small and the policy may never trigger it.
         """
+        if not self._grasped:
+            distance = np.linalg.norm(self.ee_position - self.handle_position)
+            if distance < self.grasp_threshold:
+                self._activate_weld()
         return None
 
     def _terminated(self) -> bool:
@@ -266,7 +282,12 @@ class DrawerEnv(gym.Env):
         The 6-second time budget is NOT handled here. It belongs to a TimeLimit
         wrapper, and it produces truncated=True, not terminated=True.
         """
-        return False
+        success = self.drawer_opening >= SUCCESS_DISPLACEMENT
+        self._success = bool(success)
+
+        finite = np.all(np.isfinite(self.data.qpos)) and np.all(np.isfinite(self.data.qvel))
+
+        return bool(success) or not bool(finite)
 
     def _compute_reward(self, action: np.ndarray) -> tuple[float, dict]:
         """TODO 3.5 - the reward function is the specification of the behaviour.
@@ -305,6 +326,9 @@ class DrawerEnv(gym.Env):
         The dict is logged, so keep the keys stable across runs.
         """
         cfg = self.reward_config
+        distance = float(np.linalg.norm(self.handle_position - self.ee_position))
+        success = self.drawer_opening >= SUCCESS_DISPLACEMENT
+        
         terms = {
             "reach": 0.0,
             "open": 0.0,
@@ -313,6 +337,24 @@ class DrawerEnv(gym.Env):
             "action_cost": 0.0,
             "action_rate": 0.0,
         }
+
+        if cfg.sparse:
+            terms["success"] = cfg.success if success else 0.0
+            return terms["success"], terms
+
+        if not self._grasped:
+            terms["reach"] = -cfg.reach * distance
+        terms["open"] = cfg.open * self.drawer_opening
+        if self._grasp_event:
+            terms["grasp"] = cfg.grasp
+            self._grasp_event = False
+        if success:
+            terms["success"] = cfg.success
+        terms["action_cost"] = -cfg.action_cost * float(np.sum(action**2))
+        terms["action_rate"] = -cfg.action_rate_cost * float(
+            np.sum((action - self._prev_action) ** 2)
+        )
+
         reward = float(sum(terms.values()))
         return reward, terms
 

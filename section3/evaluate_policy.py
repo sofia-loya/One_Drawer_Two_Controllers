@@ -60,7 +60,28 @@ def run_episode(env, model, seed: int) -> dict:
         "time_trace": [],
         "dt": dt,
     }
-    raise NotImplementedError("TODO 3.7")
+    obs, info = env.reset(seed=seed)
+    step = 0
+    while True:
+        action, _ = model.predict(obs, deterministic=True)
+        obs, reward, terminated, truncated, info = env.step(action)
+
+        record["return"] += float(reward)
+        record["steps"] = step + 1
+        record["max_opening_m"] = max(record["max_opening_m"], float(info["drawer_opening"]))
+        record["max_abs_action"] = max(record["max_abs_action"], float(np.max(np.abs(action))))
+        record["opening_trace"].append(float(info["drawer_opening"]))
+        record["time_trace"].append(step * dt)
+
+        if info["is_success"] and record["time_to_open_s"] is None:
+            record["time_to_open_s"] = step * dt
+            record["success"] = True
+
+        step += 1
+        if terminated or truncated:
+            break
+
+    return record
 
 
 def summarize(records: list[dict]) -> dict:

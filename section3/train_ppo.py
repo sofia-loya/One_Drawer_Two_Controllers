@@ -67,7 +67,16 @@ def build_callback(eval_env, run_dir: Path, eval_freq: int):
     Two questions for your report: why must evaluation be deterministic when
     training is stochastic, and why is eval_freq counted per environment?
     """
-    raise NotImplementedError("TODO 3.6")
+    from stable_baselines3.common.callbacks import EvalCallback
+
+    return EvalCallback(
+        eval_env,
+        best_model_save_path=str(run_dir),
+        log_path=str(run_dir),
+        eval_freq=eval_freq,
+        n_eval_episodes=10,
+        deterministic=True,
+    )
 
 
 def main() -> None:

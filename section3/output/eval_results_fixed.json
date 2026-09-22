@@ -1,0 +1,12 @@
+{
+  "episodes": 10,
+  "success_rate": 1.0,
+  "mean_return": 192.68026053802723,
+  "std_return": 2.842170943040401e-14,
+  "mean_time_to_open_s": 3.2400000000000007,
+  "mean_max_opening_m": 0.24097726611326892,
+  "max_abs_action": 1.0,
+  "model": "section3/runs/ppo_seed0/best_model.zip",
+  "randomize": false,
+  "success_displacement_m": 0.24
+}
