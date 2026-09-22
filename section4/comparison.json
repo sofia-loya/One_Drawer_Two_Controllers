@@ -1,0 +1,54 @@
+{
+  "resolved_rate": {
+    "success_rate": "1/1",
+    "time_to_open_s": 3.75,
+    "max_abs_control": 2.66,
+    "max_joint_velocity_rad_s": 5.45,
+    "environment_samples": 0,
+    "wall_clock_compute": "~4 seconds (single sim rollout)",
+    "engineering_time_hours": 4,
+    "success_with_cabinet_jitter": "4/4 (100%), tested across 4 jitter samples"
+  },
+  "ppo_policy": {
+    "success_rate": "10/10 (100%)",
+    "time_to_open_s": 3.9,
+    "max_abs_control": 1.0,
+    "max_joint_velocity_rad_s": "not logged in evaluate_policy.py",
+    "environment_samples": 150000,
+    "wall_clock_compute": "6.2 minutes (seed 0 training)",
+    "engineering_time_hours": 6,
+    "success_with_cabinet_jitter": "100% (randomize=True was on during eval_results.json run)"
+  },
+  "questions": {
+    "1_sample_cost": [
+        "The policy was trained on the 150,000 samples so instead of deriving the kinematics or tuning a state machine,", 
+        "it was learned by trial and error. Both controllers had 100% success, but this task did not require solution derivation",
+        "which might be more convenient depending on the need."
+    ],
+    "2_where_knowledge_lives": [
+        "The Jacobian, the damped least-squares update, and the state machine is easier to inspect", 
+        "because the output directly points to the input. For example, the saturated gain failure pointed to the joint value ",
+        "that caused it. Whereas, the reward and the network weights are distributed so you cannot see the input that caused the", 
+        "failure just that it failed at the specific input variable."
+    ],
+    "3_model_matters_to_both": [
+        "In section 1, defect 3 the unlimited and undamped drawer slide joint would have broken the classical controller.", 
+        "Defect 4 would have corrupted the RL without crashing the training.",
+        "The  training would still run and the policy would still learn to succeed but the physics would be unrealistic."
+    ],
+       
+    "4_failure_modes": [
+        "Learned policy specific: if a policy is trained under domain randomization distribution it can fail when outside", 
+        "that distribution with no warning whereas a controller would fail to converge visibly. Controller specific: Hand ",
+        "selecting constants that are wrong for the system. The saturated gain failure that I saw came from a fixed gain",
+        "damping pair which could be wrong for the configuration."
+    ],
+  
+    "5_recommendation": [
+        "For this drawer I would ship the classical controller since it was able to pass and complete the task.",
+        "However, if the dynamics became more complicated that a kinematic model was difficult to derive then",
+        "it would make more sense to switch to RL."
+    ]
+
+    }
+}
