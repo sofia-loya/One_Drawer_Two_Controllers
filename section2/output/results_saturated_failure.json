@@ -1,0 +1,9 @@
+{
+  "controller": "resolved-rate with damped least squares",
+  "success": false,
+  "completion_time_s": 12.000000000000677,
+  "drawer_displacement_m": 0.012113657294015295,
+  "maximum_position_error_m": 0.6365949655864411,
+  "maximum_joint_velocity_rad_s": 12.506213220636491,
+  "maximum_absolute_control": 3.0718
+}

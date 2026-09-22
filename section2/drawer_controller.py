@@ -147,7 +147,10 @@ def translational_jacobian(model, data, site_name: str) -> np.ndarray:
     Returns: ndarray of shape (3, model.nv).
     """
     site_id = object_id(model, mujoco.mjtObj.mjOBJ_SITE, site_name)
-    raise NotImplementedError("TODO 2.1")
+    jacp = np.zeros((3, model.nv))
+    jacr = np.zeros((3, model.nv))
+    mujoco.mj_jacSite(model, data, jacp, jacr, site_id)
+    return jacp
 
 
 def resolved_rate_target(model, data, state, target, gain=3.0, damping=0.08):
@@ -166,6 +169,7 @@ def resolved_rate_target(model, data, state, target, gain=3.0, damping=0.08):
 
     # TODO 2.2: the Cartesian position error that the controller drives to zero.
     error = np.zeros(3)
+    error = target - current
 
     jacobian = translational_jacobian(model, data, EE_SITE)[:, dof_adr]
 
@@ -175,7 +179,10 @@ def resolved_rate_target(model, data, state, target, gain=3.0, damping=0.08):
     #
     # Use np.linalg.solve. Never form an explicit inverse, and be ready to
     # explain what lambda does near a singularity.
-    dq = np.zeros(7)
+    JJt = jacobian @ jacobian.T                      
+    rhs = gain * error                                
+    y = np.linalg.solve(JJt + damping**2 * np.eye(3), rhs)
+    dq = jacobian.T @ y     
 
     state.q_ref = state.q_ref + model.opt.timestep * dq
     q_target = state.q_ref.copy()
@@ -206,7 +213,12 @@ def desired_position(model, data, state: TaskState):
         # handle. Choose the threshold and record data.time in
         # state.phase_start_time. Say in your report what a threshold that is
         # too tight or too loose does to the task.
-
+        target = handle + np.array([-0.06, 0.0, 0.0])
+        distance = float(np.linalg.norm(tool - target))
+        approach_threshold = 0.01  # 1 cm
+        if distance < approach_threshold:
+            state.phase = "grasp"
+            state.phase_start_time = data.time
         return target, False
 
     if state.phase == "grasp":
@@ -223,7 +235,7 @@ def desired_position(model, data, state: TaskState):
 
         # TODO 2.5: success when the drawer has travelled far enough.
         # drawer_opening(model, data) gives the current displacement.
-        success = False
+        success = drawer_opening(model, data) >= SUCCESS_DISPLACEMENT
         return target, success
 
     raise ValueError(f"Unknown phase: {state.phase}")
